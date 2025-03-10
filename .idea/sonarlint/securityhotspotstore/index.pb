@@ -13,3 +13,7 @@ Y
 )tests/existential-threat-response.test.ts,e/1/e170034dfbd63228fc98a0f798d44dbedb5c34ed
 Z
 *contracts/existential-threat-response.clar,e/3/e30c380e9cc9040a3e73905f43446c4489caa04c
+Z
+*contracts/species-backup-coordination.clar,9/5/95a62be2bf1bfa10fc72eede393574ffdbe00dbe
+Y
+)tests/species-backup-coordination.test.ts,6/2/625d01dbb5c129053eb56a2d2415aee50dcba564
