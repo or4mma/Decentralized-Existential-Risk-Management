@@ -9,3 +9,7 @@ a
 -contracts/cosmic-disaster-early-warning_.clar,1/7/175d0d9b194dae08e65102b9a17621484099ba78
 \
 ,tests/cosmic-disaster-early-warning_.test.ts,1/2/1228f101fffa8730f1cb8784130c90580ef80110
+Y
+)tests/existential-threat-response.test.ts,e/1/e170034dfbd63228fc98a0f798d44dbedb5c34ed
+Z
+*contracts/existential-threat-response.clar,e/3/e30c380e9cc9040a3e73905f43446c4489caa04c
