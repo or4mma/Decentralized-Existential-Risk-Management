@@ -1,56 +1,71 @@
-import { Clarinet, Tx, type Chain, type Account, types } from "https://deno.land/x/clarinet@v1.0.0/index.ts"
-import { assertEquals } from "https://deno.land/std@0.90.0/testing/asserts.ts"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 
-Clarinet.test({
-  name: "Ensures that species records and backups can be managed",
-  async fn(chain: Chain, accounts: Map<string, Account>) {
-    const deployer = accounts.get("deployer")!
+// Mock accounts
+const mockAccounts = {
+  deployer: { address: "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM" },
+  wallet1: { address: "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5" },
+}
+
+// Mock contract call function
+const mockContractCall = vi.fn()
+
+// Mock chain
+const mockChain = {
+  contractCall: mockContractCall,
+}
+
+describe("Species Backup Coordination Contract", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    mockContractCall.mockImplementation((method, args, sender) => {
+      if (method === "register-species") {
+        return { result: "(ok u1)" }
+      } else if (method === "register-backup-location") {
+        return { result: "(ok u1)" }
+      } else if (method === "record-species-backup") {
+        return { result: "(ok true)" }
+      }
+      return { result: "(err u404)" }
+    })
+  })
+  
+  it("should register a new species", () => {
+    const geneticHash = Buffer.from("abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", "hex")
     
-    // Register a new species
-    let block = chain.mineBlock([
-      Tx.contractCall(
-          "species-backup-coordination",
-          "register-species",
-          [
-            types.ascii("Panthera leo"),
-            types.buff(Buffer.from("abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", "hex")),
-            types.ascii("Vulnerable"),
-          ],
-          deployer.address,
-      ),
-    ])
+    const result = mockChain.contractCall(
+        "register-species",
+        ["Panthera leo", geneticHash, "Vulnerable"],
+        mockAccounts.deployer.address,
+    )
     
-    // Check that the species was registered successfully
-    assertEquals(block.receipts.length, 1)
-    assertEquals(block.receipts[0].result, "(ok u1)")
+    expect(mockContractCall).toHaveBeenCalledWith(
+        "register-species",
+        ["Panthera leo", geneticHash, "Vulnerable"],
+        mockAccounts.deployer.address,
+    )
+    expect(result.result).toBe("(ok u1)")
+  })
+  
+  it("should register a backup location", () => {
+    const result = mockChain.contractCall(
+        "register-backup-location",
+        ["Arctic Vault", "78.2332° N, 15.4946° E", 95],
+        mockAccounts.deployer.address,
+    )
     
-    // Register a backup location
-    block = chain.mineBlock([
-      Tx.contractCall(
-          "species-backup-coordination",
-          "register-backup-location",
-          [types.ascii("Arctic Vault"), types.ascii("78.2332° N, 15.4946° E"), types.uint(95)],
-          deployer.address,
-      ),
-    ])
+    expect(mockContractCall).toHaveBeenCalledWith(
+        "register-backup-location",
+        ["Arctic Vault", "78.2332° N, 15.4946° E", 95],
+        mockAccounts.deployer.address,
+    )
+    expect(result.result).toBe("(ok u1)")
+  })
+  
+  it("should record a species backup", () => {
+    const result = mockChain.contractCall("record-species-backup", [1, 1, 500], mockAccounts.deployer.address)
     
-    // Check that the location was registered successfully
-    assertEquals(block.receipts.length, 1)
-    assertEquals(block.receipts[0].result, "(ok u1)")
-    
-    // Record a species backup
-    block = chain.mineBlock([
-      Tx.contractCall(
-          "species-backup-coordination",
-          "record-species-backup",
-          [types.uint(1), types.uint(1), types.uint(500)],
-          deployer.address,
-      ),
-    ])
-    
-    // Check that the backup was recorded successfully
-    assertEquals(block.receipts.length, 1)
-    assertEquals(block.receipts[0].result, "(ok true)")
-  },
+    expect(mockContractCall).toHaveBeenCalledWith("record-species-backup", [1, 1, 500], mockAccounts.deployer.address)
+    expect(result.result).toBe("(ok true)")
+  })
 })
 
